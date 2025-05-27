@@ -1,6 +1,5 @@
 const Customer = require('../../models/customerModel');
 const User = require('../../models/userModel');
-
 const getTechnicianWorkOrders = async (req, res) => {
   try {
     // Only technicians can access their work orders
@@ -42,16 +41,32 @@ const getTechnicianWorkOrders = async (req, res) => {
 
         // New code: Get original technician info if this is a repair/complaint
         let originalTechnician = null;
-// Use work order's category if project category is undefined
-if (project && (project.projectCategory === 'Repair' || order.projectCategory === 'Repair') && project.completedBy) {
-  originalTechnician = {
-    firstName: project.completedBy.firstName || '',
-    lastName: project.completedBy.lastName || '',
-    phoneNumber: project.completedBy.phone || '',
-    completedAt: project.createdAt
-  };
-}
         
+        // Check if this is a repair or complaint type work order
+        const isRepair = (project && project.projectCategory === 'Repair') || 
+                         (order.projectCategory === 'Repair') ||
+                         (order.type === 'complaint');
+        
+        // Determine the correct category based on work order type
+        let category = 'New Installation';
+        if (isRepair) {
+          category = 'Repair';
+        } else if (project && project.projectCategory) {
+          category = project.projectCategory;
+        } else if (order.projectCategory) {
+          category = order.projectCategory;
+        }
+        
+        // Get original technician info for repairs
+        if (isRepair && project && project.completedBy) {
+          originalTechnician = {
+            firstName: project.completedBy.firstName || '',
+            lastName: project.completedBy.lastName || '',
+            phoneNumber: project.completedBy.phone || '',
+            completedAt: project.createdAt
+          };
+        }
+       
         workOrders.push({
           ...order.toObject(),
           customerId: customer._id,
@@ -61,7 +76,7 @@ if (project && (project.projectCategory === 'Repair' || order.projectCategory ==
           customerEmail: customer.email,
           customerAddress: customer.address,
           branchName: customer.branch ? customer.branch.name : null,
-          projectCategory: project?.projectCategory || order.projectCategory || 'New Installation',
+          projectCategory: category, // Using our determined category here
           projectCreatedAt: project ? project.createdAt : null,
           assignedByName: order.assignedBy ?
             `${order.assignedBy.firstName} ${order.assignedBy.lastName}` : 'Admin',
