@@ -17,21 +17,23 @@ const getTechnicianInventory = async (req, res) => {
     }).populate('item');
    
     // Step 2: Format the inventory items (serialized and generic products)
-    const formattedInventory = technicianInventory.map(inventory => {
-      const item = inventory.item;
-      
-      return {
-        id: inventory._id, // Fixed the syntax error
-        itemId: item.id,
-        itemName: item.name,
-        type: item.type,
-        unit: item.unit,
-        salePrice: item.salePrice,
-        serializedItems: inventory.serializedItems,
-        genericQuantity: inventory.genericQuantity,
-        lastUpdated: inventory.updatedAt || inventory.createdAt
-      };
-    });
+    const formattedInventory = technicianInventory
+      .filter(inventory => inventory.item !== null)
+      .map(inventory => {
+        const item = inventory.item;
+        
+        return {
+          id: inventory._id, // Fixed the syntax error
+          itemId: item.id || item._id.toString(),
+          itemName: item.name,
+          type: item.type,
+          unit: item.unit,
+          salePrice: item.salePrice,
+          serializedItems: inventory.serializedItems,
+          genericQuantity: inventory.genericQuantity,
+          lastUpdated: inventory.updatedAt || inventory.createdAt
+        };
+      });
     
     // Step 3: Fetch all service items (these don't need to be assigned)
     const serviceItems = await Item.find({ type: 'service' });
@@ -40,7 +42,7 @@ const getTechnicianInventory = async (req, res) => {
     const formattedServices = serviceItems.map(service => {
       return {
         id: service._id,
-        itemId: service.id,
+        itemId: service.id || service._id.toString(),
         itemName: service.name,
         type: service.type,
         salePrice: service.salePrice,
