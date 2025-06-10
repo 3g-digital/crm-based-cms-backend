@@ -1,5 +1,6 @@
 const Customer = require('../../models/customerModel');
 const User = require('../../models/userModel');
+const BillModel = require('../../models/billModel');
 const { generateResponse } = require('../../helpers/responseGenerator');
 const mongoose = require('mongoose'); // Add this for ObjectId comparison
 
@@ -32,6 +33,16 @@ const approveWorkOrder = async (req, res) => {
      
       // Update work order status to completed
       workOrder.status = 'completed';
+
+      // Update bill status to approved in embedded bills array
+      if (workOrder.bills && Array.isArray(workOrder.bills)) {
+        workOrder.bills.forEach(bill => {
+          if (bill.status !== 'rejected') {
+            bill.status = 'approved';
+            bill.isReverted = false; // Reset isReverted on approval
+          }
+        });
+      }
      
       // Add approval entry to status history
       workOrder.statusHistory.unshift({
@@ -65,6 +76,12 @@ const approveWorkOrder = async (req, res) => {
 
       // Save the changes
       await customer.save();
+
+      // Update Bill documents in Bill collection to status 'approved'
+      await BillModel.updateMany(
+        { customer: new mongoose.Types.ObjectId(customerId), orderId: orderId, status: { $ne: 'rejected' } },
+        { $set: { status: 'approved' } }
+      );
      
       // Return the updated work order with populated fields
       const updatedCustomer = await Customer.findById(customerId)
@@ -103,6 +120,7 @@ const approveWorkOrder = async (req, res) => {
       return res.json(generateResponse(true, 'Work order approved successfully', responseData));
     } catch (error) {
       console.error('Error approving work order:', error);
+      console.error(error.stack);
       return res.status(500).json(generateResponse(false, 'Server error while approving work order'));
     }
   }

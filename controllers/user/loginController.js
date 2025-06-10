@@ -6,7 +6,7 @@ const loginController = async (req, res) => {
     const { username, password } = req.body;
    
     // Check for user
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username: new RegExp(`^${username}$`, 'i') });
     if (!user) {
       return res.status(401).json({
         message: 'Invalid credentials',

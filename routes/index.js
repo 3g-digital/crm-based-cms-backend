@@ -40,6 +40,7 @@ const checkManagerStatusController = require('../controllers/manager/checkManage
 const initiateTransferController = require('../controllers/manager/initiateTransferController');
 const acceptTransferController = require('../controllers/manager/acceptTransferController');
 const rejectTransferController = require('../controllers/manager/rejectTransferController');
+const rejectTechnicianProjectTransfer = require('../controllers/manager/rejectTechnicianProjectTransfer');
 const getRejectedTransfersController = require('../controllers/manager/getRejectedTransfersController');
 const getAllWorkOrders = require('../controllers/customer/getAllWorkOrders');
 const createWorkOrder = require('../controllers/customer/createWorkOrder');
@@ -58,6 +59,7 @@ const returnInventoryToManager = require('../controllers/technician/returnInvent
 const getManagerProjects = require('../controllers/manager/getManagerProjects');
 const approveWorkOrder = require('../controllers/manager/approveWorkOrder');
 const getBillDetails = require('../controllers/manager/getBillDetails');
+const rejectBill = require('../controllers/manager/rejectBill');
 const getTechnicianProjects = require('../controllers/technician/getTechnicianProjects');
 const addWorkOrderRemark = require('../controllers/technician/addWorkOrderRemark');
 const getReturnedInventory = require('../controllers/manager/getReturnedInventory');
@@ -116,6 +118,7 @@ router.get("/get-manager-projects", authToken, getManagerProjects);
 router.post("/approve-order", authToken, approveWorkOrder);
 router.get("/get-bill-details/:id", authToken, getBillDetails);
 router.post("/accept-technician-project-transfer", authToken, acceptTechnicianProjectTransfer);
+router.post("/reject-technician-project-transfer", authToken, rejectTechnicianProjectTransfer);
 router.get("/get-returned-inventory", authToken, getReturnedInventory);
 router.post("/confirm-returned-inventory/:returnId", authToken, confirmReturnedInventory);
 router.get("/serial-number-detail/:serialNumber", authToken, getSerialNumberDetails);
@@ -171,5 +174,8 @@ router.get("/inventory-by-type/:type", authToken, getInventoryByType);
 router.post("/assign-inventory-technician", authToken, assignInventoryToTechnician);
 router.get("/get-technician-inventory", authToken, getTechnicianInventory);
 
+
+router.post("/reject-technician-project-transfer", authToken, rejectTechnicianProjectTransfer);
+router.post("/reject-bill", authToken, rejectBill);
 
 module.exports = router;

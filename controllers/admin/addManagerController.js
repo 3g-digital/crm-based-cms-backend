@@ -13,6 +13,16 @@ const addManagerController = async (req, res) => {
     }
    
     const { firstName, lastName, username, email, password, phone, branch, status } = req.body;
+
+    // Validate username for allowed characters (letters, numbers, _, ., -)
+    const usernameRegex = /^[a-zA-Z0-9_.-@#]+$/;
+    if (!usernameRegex.test(username)) {
+      return res.status(400).json({
+        message: 'Username can only contain letters, numbers, and symbols (_ . -). Spaces are not allowed.',
+        error: true,
+        success: false
+      });
+    }
    
     // Check if username or email already exists
     const existingUser = await User.findOne({

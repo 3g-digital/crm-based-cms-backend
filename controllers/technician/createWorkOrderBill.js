@@ -191,18 +191,24 @@ const createWorkOrderBill = async (req, res) => {
     // Create the bill
     const billNumber = `BILL-${Date.now().toString().slice(-6)}`;
     
-    const newBill = new BillModel({
-      billNumber,
-      customer: customerId,
-      workOrder: workOrder._id,
-      orderId,
-      technician: req.user._id,
-      items: billItems,
-      totalAmount,
-      createdAt: new Date(),
-      // Store itemsToUpdate for use in confirmWorkOrderBill
-      itemsToUpdate: itemsToUpdate
-    });
+const newBill = new BillModel({
+  billNumber,
+  customer: customerId,
+  workOrder: workOrder._id,
+  orderId,
+  technician: req.user._id,
+  items: billItems,
+  totalAmount,
+  amountPaid: 0,
+  amountDue: totalAmount,
+  extendedPaymentStatus: 'unpaid',
+  status: 'pending',
+  isReverted: false,
+  paymentMethod: 'pending',
+  createdAt: new Date(),
+  // Store itemsToUpdate for use in confirmWorkOrderBill
+  itemsToUpdate: itemsToUpdate
+});
     
     await newBill.save();
     
