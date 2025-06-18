@@ -66,16 +66,16 @@ const confirmWorkOrderBill = async (req, res) => {
 
     await bill.save();
 
-    // Only update inventory if some payment was made (paidAmount > 0)
-    if (bill.amountPaid > 0) {
-      // If we have itemsToUpdate stored in the bill from createWorkOrderBill
-      if (bill.itemsToUpdate && bill.itemsToUpdate.length > 0) {
-        for (const updateItem of bill.itemsToUpdate) {
-          const inventory = await TechnicianInventory.findById(updateItem.inventoryId);
+    console.log('Bill amountPaid:', bill.amountPaid);
+    // Update inventory for generic items regardless of paidAmount
+    if (bill.itemsToUpdate && bill.itemsToUpdate.length > 0) {
+      for (const updateItem of bill.itemsToUpdate) {
+        const inventory = await TechnicianInventory.findById(updateItem.inventoryId);
 
-          if (inventory) {
-            if (updateItem.type === 'serialized') {
-              // Update serial item status to 'used'
+        if (inventory) {
+          if (updateItem.type === 'serialized') {
+            // Update serial item status to 'used' only if paidAmount > 0
+            if (bill.amountPaid > 0) {
               const serialIndex = inventory.serializedItems.findIndex(
                 serial => serial.serialNumber === updateItem.serialNumber
               );
@@ -83,29 +83,32 @@ const confirmWorkOrderBill = async (req, res) => {
               if (serialIndex >= 0) {
                 inventory.serializedItems[serialIndex].status = 'used';
               }
-            } else {
-              // Reduce generic quantity by the specified amount
-              inventory.genericQuantity -= updateItem.quantity;
-              if (inventory.genericQuantity < 0) inventory.genericQuantity = 0;
             }
-
-            inventory.lastUpdated = new Date();
-            inventory.lastUpdatedBy = req.user._id;
-
-            await inventory.save();
+          } else {
+            console.log(`Reducing generic inventory for inventoryId ${updateItem.inventoryId} by quantity ${updateItem.quantity}`);
+            // Reduce generic quantity by the specified amount regardless of paidAmount
+            inventory.genericQuantity -= updateItem.quantity;
+            if (inventory.genericQuantity < 0) inventory.genericQuantity = 0;
           }
-        }
-      } else {
-        // Fallback to using the bill items directly if itemsToUpdate is not available
-        for (const item of bill.items) {
-          const inventory = await TechnicianInventory.findOne({
-            technician: req.user._id,
-            item: item.itemId
-          });
 
-          if (inventory) {
-            if (item.type === 'serialized-product' && item.serialNumber) {
-              // For serialized items, mark as used
+          inventory.lastUpdated = new Date();
+          inventory.lastUpdatedBy = req.user._id;
+
+          await inventory.save();
+        }
+      }
+    } else {
+      // Fallback to using the bill items directly if itemsToUpdate is not available
+      for (const item of bill.items) {
+        const inventory = await TechnicianInventory.findOne({
+          technician: req.user._id,
+          item: item.itemId
+        });
+
+        if (inventory) {
+          if (item.type === 'serialized-product' && item.serialNumber) {
+            // For serialized items, mark as used only if paidAmount > 0
+            if (bill.amountPaid > 0) {
               const serialIndex = inventory.serializedItems.findIndex(
                 serial => serial.serialNumber === item.serialNumber
               );
@@ -113,17 +116,18 @@ const confirmWorkOrderBill = async (req, res) => {
               if (serialIndex >= 0) {
                 inventory.serializedItems[serialIndex].status = 'used';
               }
-            } else if (item.type === 'generic-product') {
-              // For generic items, reduce quantity by the amount in the bill
-              inventory.genericQuantity -= item.quantity;
-              if (inventory.genericQuantity < 0) inventory.genericQuantity = 0;
             }
-
-            inventory.lastUpdated = new Date();
-            inventory.lastUpdatedBy = req.user._id;
-
-            await inventory.save();
+          } else if (item.type === 'generic-product') {
+            console.log(`Reducing generic inventory for itemId ${item.itemId} by quantity ${item.quantity}`);
+            // For generic items, reduce quantity by the amount in the bill regardless of paidAmount
+            inventory.genericQuantity -= item.quantity;
+            if (inventory.genericQuantity < 0) inventory.genericQuantity = 0;
           }
+
+          inventory.lastUpdated = new Date();
+          inventory.lastUpdatedBy = req.user._id;
+
+          await inventory.save();
         }
       }
     }

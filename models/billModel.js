@@ -62,14 +62,40 @@ const billSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+   // ✅ New Payment Flow Fields
+  amountPaid: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  amountDue: {
+    type: Number,
+    required: true
+  },
+  extendedPaymentStatus: {
+    type: String,
+    enum: ['unpaid', 'partial', 'paid'],
+    default: 'unpaid'
+  },
+
+  // ✅ Bill Status & Rejection Tracking
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  rejectionReason: {
+    type: String
+  },
+  isReverted: {
+    type: Boolean,
+    default: false
+  },
+
+  // ✅ Payment & Timestamps
   paymentMethod: {
     type: String,
     enum: ['cash', 'online', 'pending'],
-    default: 'pending'
-  },
-  paymentStatus: {
-    type: String,
-    enum: ['pending', 'paid', 'failed'],
     default: 'pending'
   },
   transactionId: {
