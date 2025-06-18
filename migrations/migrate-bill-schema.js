@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Bill = require('../models/billModel'); // apne actual Bill model ka path lagao
 
 // ⚙️ Change this to your actual MongoDB connection string
-const MONGO_URI = 'mongodb+srv://jasmeetkaur9346:jass123@crmproject.gdcclik.mongodb.net/CRM-based-cms?retryWrites=true&w=majority&appName=CRMProject'; // Replace this
+const MONGO_URI = 'mongodb+srv://3gdigitalindia:beyond789@crmproject.vaxgwjt.mongodb.net/CRM-based-cms?retryWrites=true&w=majority&appName=CRMProject'; // Replace this
 
 async function migrateBills() {
   try {
