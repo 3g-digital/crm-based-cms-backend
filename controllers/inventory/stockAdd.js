@@ -10,7 +10,7 @@ const stockAdd = async (req, res) => {
       });
     }
 
-    const { itemId, serialNumber, quantity, date } = req.body;
+const { itemId, serialNumber, quantity, date, remark } = req.body;
    
     // Check if manager has a branch assigned
     if (!req.userBranch) {
@@ -54,12 +54,13 @@ const stockAdd = async (req, res) => {
         });
       }
      
-      // Add stock with serial number and manager's branch ID
+      // Add stock with serial number, remark and manager's branch ID
       item.stock.push({
         serialNumber,
         quantity: 1, // Always 1 for serial products
         date: date || new Date(),
-        branch: req.userBranch // Add branch ID to stock entry
+        branch: req.userBranch, // Add branch ID to stock entry
+        remark: remark || ''
       });
     } else if (item.type === 'generic-product') {
       // For non-serial products, add stock with quantity only
@@ -70,11 +71,12 @@ const stockAdd = async (req, res) => {
         });
       }
      
-      // Add stock without serial number but with quantity and manager's branch ID
+      // Add stock without serial number but with quantity, remark and manager's branch ID
       item.stock.push({
         quantity,
         date: date || new Date(),
-        branch: req.userBranch // Add branch ID to stock entry
+        branch: req.userBranch, // Add branch ID to stock entry
+        remark: remark || ''
       });
     } else {
       // Service items don't have stock
