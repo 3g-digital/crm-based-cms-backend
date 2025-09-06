@@ -30,20 +30,23 @@ const leadSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  email: {
-    type: String,
-    match: /^\S+@\S+\.\S+$/,
-    sparse: true
+  firmName:{
+     type: String,
   },
+  // email: {
+  //   type: String,
+  //   match: /^\S+@\S+\.\S+$/,
+  //   sparse: true
+  // },
   whatsappNumber: {
     type: String
   },
   address: {
     type: String
   },
-  age: {
-    type: Number
-  },
+  // age: {
+  //   type: Number
+  // },
   remarks: [remarkSchema],
   status: {
     type: String,
